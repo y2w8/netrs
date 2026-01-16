@@ -4,16 +4,19 @@ use crossterm::{
     event::{self, Event, KeyCode},
     terminal::{self, disable_raw_mode, enable_raw_mode},
 };
-use ratatui::{Terminal, backend::CrosstermBackend};
-use std::io::{Write, stdout};
+use ratatui::{
+    Terminal,
+    backend::CrosstermBackend,
+    layout::{Constraint, Direction, Layout},
+};
+use std::io::stdout;
 
-use crate::app::App;
+use crate::{app::App, ui::table};
 
 pub struct Tui {
-    stdout: std::io::Stdout,
-    backend: CrosstermBackend,
-    terminal: Terminal,
+    terminal: Terminal<CrosstermBackend<std::io::Stdout>>,
 }
+
 impl Tui {
     pub fn new() -> anyhow::Result<Self> {
         let mut stdout = stdout();
@@ -23,16 +26,11 @@ impl Tui {
             .execute(terminal::Clear(terminal::ClearType::All))?;
 
         let backend = CrosstermBackend::new(stdout);
-        let mut terminal = Terminal::new(backend)?;
+        let terminal = Terminal::new(backend)?;
 
-        Ok(Tui {
-            stdout,
-            backend,
-            terminal,
-        })
+        Ok(Tui { terminal })
     }
     pub async fn run(&mut self, app: &mut App) -> Result<()> {
-
         while !app.should_quit {
             self.terminal.draw(|f| {
                 let size = f.area();
@@ -40,13 +38,22 @@ impl Tui {
                     ratatui::widgets::Paragraph::new("netrs — NetworkManager TUI"),
                     size,
                 );
+                let layout = Layout::new(
+                    Direction::Vertical,
+                    [
+                        Constraint::Percentage(50),
+                        Constraint::Percentage(30),
+                        Constraint::Percentage(20),
+                    ],
+                )
+                .split(size);
+                table::draw(f, layout[0], app);
             })?;
 
             if event::poll(std::time::Duration::from_millis(200))? {
                 if let Event::Key(key) = event::read()? {
                     match key.code {
                         KeyCode::Char('q') => app.quit(),
-                        KeyCode::Char('c') => app.quit(),
                         _ => {}
                     }
                 }
@@ -54,8 +61,10 @@ impl Tui {
         }
 
         disable_raw_mode()?;
-        self.stdout.flush();
-        self.stdout.execute(terminal::LeaveAlternateScreen);
+        self.terminal
+            .backend_mut()
+            .execute(terminal::LeaveAlternateScreen)?;
+        self.terminal.show_cursor()?;
         Ok(())
     }
 }
