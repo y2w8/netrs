@@ -5,13 +5,12 @@ use crossterm::{
     terminal::{self, disable_raw_mode, enable_raw_mode},
 };
 use ratatui::{
-    Terminal,
-    backend::CrosstermBackend,
-    layout::{Constraint, Direction, Layout},
+    Terminal, backend::CrosstermBackend, layout::{Constraint, Direction, Layout}, style::{Modifier, Style}, widgets::{Block, List, ListItem}
 };
+use ratatui::text::{self, Span, Line};
 use std::io::stdout;
 
-use crate::{app::App, ui::table};
+use crate::{app::App, ui::{list::StatefulList, table}};
 
 pub struct Tui {
     terminal: Terminal<CrosstermBackend<std::io::Stdout>>,
@@ -48,12 +47,21 @@ impl Tui {
                 )
                 .split(size);
                 table::draw(f, layout[0], app);
+                let networks: Vec<ListItem> = app
+                    .networks
+                    .items
+                    .iter()
+                    .map(|i| ListItem::new(vec![text::Line::from(Span::raw(i.clone()))]))
+                    .collect();
+                StatefulList::<String>::draw(f, layout[0], networks, app);
             })?;
 
             if event::poll(std::time::Duration::from_millis(200))? {
                 if let Event::Key(key) = event::read()? {
                     match key.code {
                         KeyCode::Char('q') => app.quit(),
+                        KeyCode::Char('j') => app.networks.next(),
+                        KeyCode::Char('k') => app.networks.previous(),
                         _ => {}
                     }
                 }
