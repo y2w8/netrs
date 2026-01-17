@@ -5,10 +5,10 @@ pub struct App {
     pub nm: NmClient,
     pub should_quit: bool,
 
-    pub focus: Focus,
+    pub tab: Tabs,
 }
 
-pub enum Focus {
+pub enum Tabs {
     KnownNetworks,
     NewNetworks,
     Device,
@@ -20,7 +20,8 @@ impl App {
         Ok(Self {
             nm,
             should_quit: false,
-            focus: Focus::KnownNetworks,
+
+            tab: Tabs::KnownNetworks,
         })
     }
 
