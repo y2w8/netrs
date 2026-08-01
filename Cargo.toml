@@ -1,6 +1,6 @@
 [package]
 name = "nmrs-tui"
-version = "0.1.0"
+version = "0.1.1"
 license = "GPL-3.0"
 description = "A fast, keyboard-first TUI for NetworkManager — built in Rust."
 authors = ["Yousef Al-Harbi <yousefalharby416@gmail.com>"]

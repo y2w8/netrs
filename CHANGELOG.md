@@ -2,6 +2,8 @@
 All notable changes to the `nmrs-tui` crate will be documented in this file.
 
 ## [Unreleased]
+
+## [0.1.1] - 2026-08-01
 ### Added
 - Renovate bot ([#2](https://github.com/y2w8/nmrs-tui/pull/2))
 - Configuration through `config.ron` ([#1](https://github.com/y2w8/nmrs-tui/pull/1))  
